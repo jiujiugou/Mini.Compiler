@@ -1,13 +1,9 @@
-﻿
-
-using Mini.Compiler.CodeAnalysis;
-
-namespace Mini.Compiler
+﻿namespace Mini.Compiler.CodeAnalysis.Syntax
 {
     class Parser
     {
         private readonly SyntaxToken[] _tokens;
-        private List<string> _diagnostics= new List<string>();
+        private List<string> _diagnostics = new List<string>();
         private int _position;
         public Parser(string text)
         {
@@ -16,7 +12,7 @@ namespace Mini.Compiler
             SyntaxToken token;
             do
             {
-                token = lexer.NextToken();
+                token = lexer.Lex();
                 if (token.Kind != SyntaxKind.WhiteSpaceToken && token.Kind != SyntaxKind.BadToken)
                 {
                     tokens.Add(token);
@@ -49,7 +45,7 @@ namespace Mini.Compiler
                 return NextToken();
             }
             _diagnostics.Add($"ERROR: unexpected token <{Current.Kind}>, expected <{kind}>");
-            return new SyntaxToken(kind, Current.Postion, null!, null!);
+            return new SyntaxToken(kind, Current.Postion, kind.ToString(), null!);
         }
         public SyntaxTree Parse()
         {
@@ -57,10 +53,10 @@ namespace Mini.Compiler
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
             return new SyntaxTree(_diagnostics, expression, endOfFileToken);
         }
-        public ExpressionSynax ParseExpression(int parentPrecedence = 0)
+        public ExpressionSyntax ParseExpression(int parentPrecedence = 0)
         {
-            ExpressionSynax left;
-            var unaryPrecedence = GetUnaryOperatorPrecedence(Current.Kind);
+            ExpressionSyntax left;
+            var unaryPrecedence = SyntaxFacts.GetUnaryOperatorPrecedence(Current.Kind);
 
             if (unaryPrecedence > 0)
             {
@@ -75,7 +71,7 @@ namespace Mini.Compiler
 
             while (true)
             {
-                var precedence = GetBinaryOperatorPrecedence(Current.Kind);
+                var precedence = SyntaxFacts.GetBinaryOperatorPrecedence(Current.Kind);
                 if (precedence == 0 || precedence <= parentPrecedence)
                     break;
 
@@ -87,35 +83,33 @@ namespace Mini.Compiler
             return left;
         }
 
-        private int GetBinaryOperatorPrecedence(SyntaxKind kind)
-        {
-            return kind switch
-            {
-                SyntaxKind.StarToken or SyntaxKind.SlashToken => 2,
-                SyntaxKind.PlusToken or SyntaxKind.MinusToken => 1,
-                _ => 0,
-            };
-        }
-        private int GetUnaryOperatorPrecedence(SyntaxKind kind)
-        {
-            return kind switch
-            {
-                SyntaxKind.MinusToken => 3, // 负号优先级最高
-                _ => 0,
-            };
-        }
-        private ExpressionSynax ParsePrimaryExpression()
-        {
-            if (Current.Kind == SyntaxKind.OpenParenthesisToken)
-            {
-                NextToken(); // 跳过 '('
-                var expression = ParseExpression();
-                Match(SyntaxKind.CloseParenthesisToken);
-                return expression;
-            }
-            var numberToken = Match(SyntaxKind.NumberToken);
-            return new NumberExpressionSynax(numberToken);
-        }
 
+        private ExpressionSyntax ParsePrimaryExpression()
+        {
+            switch (Current.Kind)
+            {
+                case SyntaxKind.OpenParenthesisToken:
+                    {
+                        var left = NextToken();
+                        var expression = ParseExpression();
+                        var right = Match(SyntaxKind.CloseParenthesisToken);
+                        return new ParenthesizedExpressionSyntax(left, expression, right);
+                    }
+                case SyntaxKind.FalseKeyword:
+                case SyntaxKind.TrueKeyword:
+                    {
+                        var keyToken = NextToken();
+                        var value = keyToken.Kind == SyntaxKind.TrueKeyword;
+                        return new LiteralExpressionSyntax(keyToken, value);
+                    }
+                default:
+                    {
+                        var numberToken = Match(SyntaxKind.NumberToken);
+                        var value = numberToken.Value is int i ? i : 0;
+                        return new LiteralExpressionSyntax(numberToken, value);
+                    }
+            }
+            
+        }
     }
 }

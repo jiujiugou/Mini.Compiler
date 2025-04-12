@@ -1,6 +1,6 @@
-﻿namespace Mini.Compiler
+﻿namespace Mini.Compiler.CodeAnalysis.Syntax
 {
-    class SyntaxToken :SyntaxNode
+    class SyntaxToken : SyntaxNode
     {
         public SyntaxToken(SyntaxKind kind, int postion, string text, object value)
         {

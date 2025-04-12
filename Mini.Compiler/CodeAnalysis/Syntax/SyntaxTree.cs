@@ -1,15 +1,15 @@
-﻿namespace Mini.Compiler.CodeAnalysis
+﻿namespace Mini.Compiler.CodeAnalysis.Syntax
 {
     sealed class SyntaxTree
     {
-        public SyntaxTree(IEnumerable<string> diagnostics, ExpressionSynax root, SyntaxToken endOfFileToken)
+        public SyntaxTree(IEnumerable<string> diagnostics, ExpressionSyntax root, SyntaxToken endOfFileToken)
         {
             Diagnostics = diagnostics.ToArray();
             Root = root;
             EndOfFileToken = endOfFileToken;
         }
         public IEnumerable<string> Diagnostics { get; }
-        public ExpressionSynax Root { get; }
+        public ExpressionSyntax Root { get; }
         public SyntaxToken EndOfFileToken { get; }
     }
 }
