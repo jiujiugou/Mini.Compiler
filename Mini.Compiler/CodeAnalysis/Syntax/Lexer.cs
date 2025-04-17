@@ -1,15 +1,17 @@
-﻿namespace Mini.Compiler.CodeAnalysis.Syntax
+﻿using Mini.Compiler.CodeAnalysis.Text;
+
+namespace Mini.Compiler.CodeAnalysis.Syntax
 {
     class Lexer
     {
-        private readonly string _text;
+        private readonly SourceText _text;
         private int _position;
-        private List<string> _diagnostics = new List<string>();
-        public Lexer(string text)
+        private DiagnosticBag _diagnostics = new DiagnosticBag();
+        public Lexer(SourceText text)
         {
             _text = text;
         }
-        public IEnumerable<string> Diagnostics => _diagnostics;
+        public DiagnosticBag Diagnostics => _diagnostics;
         
         private char Current => Peek(0);
 
@@ -42,10 +44,10 @@
                     Next();
                 }
                 var length = _position - start;
-                var text = _text.Substring(start, length);
+                var text = _text.ToString(start, length);
                 if (!int.TryParse(text, out var value))
                 {
-                    _diagnostics.Add($"ERROR: The number {_text} is not a valid Int32");
+                    _diagnostics.ReportInvalidNumber(new TextSpan(start,length),_text.ToString(),typeof(int));
                 }
                 return new SyntaxToken(SyntaxKind.NumberToken, start, text, value);
             }
@@ -57,7 +59,7 @@
                     Next();
                 }
                 var length = _position - start;
-                var text = _text.Substring(start, length);
+                var text = _text.ToString(start, length);
                 int.TryParse(text, out var value);
                 return new SyntaxToken(SyntaxKind.WhiteSpaceToken, start, text, null!);
             }
@@ -69,7 +71,7 @@
                     Next();
                 }
                 var length = _position - start;
-                var text = _text.Substring(start, length);
+                var text = _text.ToString(start, length);
                 var kind =SyntaxFacts.GetKeywordKind(text);
                 return new SyntaxToken(kind, start, text, null!);
             }
@@ -128,8 +130,8 @@
                     }
                     break;
                 default:
-                    _diagnostics.Add($"ERROR: bad character input: '{Current}'");
-                    token = new SyntaxToken(SyntaxKind.BadToken, _position++, _text.Substring(_position - 1, 1), null!);
+                    _diagnostics.ReportBadCharacter(_position,Current);
+                    token = new SyntaxToken(SyntaxKind.BadToken, _position++, _text.ToString(_position - 1, 1), null!);
                     break;
             }
             return token;

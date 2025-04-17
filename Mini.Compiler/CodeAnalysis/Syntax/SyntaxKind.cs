@@ -1,7 +1,7 @@
 ﻿namespace Mini.Compiler.CodeAnalysis.Syntax
 {
     // 定义一个枚举类型 SyntaxKind，用于表示不同的语法标记类型
-    enum SyntaxKind
+    public enum SyntaxKind
     {
         // 标记类型
         // 数字标记
@@ -71,5 +71,7 @@
         // return 关键字
         ReturnKeyword,
         NotEqualToken,
+        NameExpression,
+        AssginmentExpression
     }
 }
