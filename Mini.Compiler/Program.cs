@@ -10,6 +10,7 @@ namespace Mini.Compiler
         static void Main(string[] args)
         {
             bool showTree = false;
+            var variables = new Dictionary<string, object>();
             while (true)
             {
                 Console.Write("> ");
@@ -29,8 +30,12 @@ namespace Mini.Compiler
                 }
                 var parser = new Parser(line);
                 var syntaxTree = parser.Parse();
-                var binder = new Binder();
-                var boundExpression = binder.BindExpression(syntaxTree.Root);
+                var compliation = new Compliation(syntaxTree);
+                
+                //var boundExpression=binder.BindExpression(syntaxTree.Root);
+                //var boundExpression = binder.BindExpression(syntaxTree.Root);
+                var result=compliation.Evalutate(variables);
+                var diagnostics = result.Diagnostics;
                 if (line == "#showTree")
                 {
                     showTree = true;
@@ -45,40 +50,21 @@ namespace Mini.Compiler
                 {
                     PrettyPrint(syntaxTree.Root);
                 }
-                if (syntaxTree.Diagnostics.Any())
+                if (diagnostics.Any())
                 {
-                    foreach (var diagnostic in syntaxTree.Diagnostics)
+                    foreach (var diagnostic in diagnostics)
                     {
-                        Console.WriteLine(diagnostic);
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(diagnostic.Message); // ✅ 打印错误信息
+                        Console.ResetColor();
                     }
-                    continue;
                 }
-
-                try
+                else
                 {
-                    var evaluator = new Evaluator(boundExpression);
-                    var result = evaluator.Evaluate();
-                    Console.WriteLine(result);
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine(result.Value); // 打印结果
+                    Console.ResetColor();
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Runtime Error: {ex.Message}");
-                }
-
-                //var lexer = new Lexer(line);
-                //while (true)
-                //{
-                //    var token = lexer.Lex();
-                //    if (token.Kind == SyntaxKind.EndOfFileToken)
-                //    {
-                //        break;
-                //    }
-                //    Console.WriteLine($"{token.Kind}:'{token.Text}'");
-                //    if (token.Value != null)
-                //    {
-                //        Console.WriteLine($"{token.Value}");
-                //    }
-                //}
             }
         }
         static void PrettyPrint(SyntaxNode node, string indent = "", bool isLast = true)

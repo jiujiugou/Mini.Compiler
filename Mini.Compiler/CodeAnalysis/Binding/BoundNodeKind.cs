@@ -5,6 +5,8 @@
         UnaryExpression,
         LiteralExpression,
         BinaryExpression,
-        ErrorExpression
+        ErrorExpression,
+        NameExpression,
+        AssignExpression
     }
 }

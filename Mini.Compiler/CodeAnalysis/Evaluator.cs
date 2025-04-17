@@ -1,16 +1,17 @@
 ﻿using Mini.Compiler.CodeAnalysis.Binding;
-using Mini.Compiler.CodeAnalysis.Syntax;
 using System;
 
 namespace Mini.Compiler.CodeAnalysis
 {
+
     class Evaluator
     {
         private readonly BoundExpression _root;
-
-        public Evaluator(BoundExpression root)
+        private readonly Dictionary<string, object> _variables;
+        public Evaluator(BoundExpression root, Dictionary<string, object> variables)
         {
             _root = root;
+            _variables = variables;
         }
 
         public object Evaluate()
@@ -24,6 +25,13 @@ namespace Mini.Compiler.CodeAnalysis
             {
                 case BoundLiteralExpression literal:
                     return literal.Value;
+
+                case BoundNameExpression name:
+                    return _variables[name.Name];
+                case BoundAssignmentExpression assignment:
+                    var value = EvaluateExpression(assignment.BoundExpression);
+                    _variables[assignment.Name] = value;
+                    return value;
 
                 case BoundUnaryExpression unary:
                     var operand = EvaluateExpression(unary.Operand);
