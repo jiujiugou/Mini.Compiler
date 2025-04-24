@@ -28,14 +28,14 @@ namespace Mini.Compiler
             while (!context.ExitRequested)
             {
                 Console.Write("> ");
-                var input = Console.ReadLine()?.Trim();
-                if (string.IsNullOrEmpty(input))
+                var line = Console.ReadLine()?.Trim();
+                if (string.IsNullOrEmpty(line))
                     continue;
 
-                if (TryProcessCommand(input, context))
+                if (TryProcessCommand(line, context))
                     continue;
 
-                EvaluateAndDisplay(input, context);
+                EvaluateAndDisplay(line, context);
             }
         }
 
@@ -60,6 +60,7 @@ namespace Mini.Compiler
                 PrettyPrint(Console.Out, syntaxTree.Root);
 
             var result = compilation.Evalutate(context.Variables);
+
             if (result.Diagnostics.Any())
             {
                 foreach (var diag in result.Diagnostics)

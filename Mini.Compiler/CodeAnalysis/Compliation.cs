@@ -30,7 +30,10 @@ namespace Mini.Compiler.CodeAnalysis
 
             var evaluator = new Evaluator(boundExpression,variables);
             var result = evaluator.Evaluate();
+
             return new EvaluationResult(ImmutableArray<Diagnostics>.Empty, result);
+
+            return new EvaluationResult(Array.Empty<Diagnostics>(), result);
         }
     }
 }
