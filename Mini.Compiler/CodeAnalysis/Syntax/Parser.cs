@@ -1,9 +1,4 @@
-﻿
-
-using Mini.Compiler.CodeAnalysis.Text;
-using System.Collections.Immutable;
-
-namespace Mini.Compiler.CodeAnalysis.Syntax
+﻿namespace Mini.Compiler.CodeAnalysis.Syntax
 {
     class Parser
     {
@@ -59,6 +54,21 @@ namespace Mini.Compiler.CodeAnalysis.Syntax
             var expression = ParseExpression();
             var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
             return new SyntaxTree(_text,_diagnostics.ToImmutableArray(), expression, endOfFileToken);
+        }
+        private ExpressionSyntax ParseAssignmentExpression()
+        {
+            if (Peek(0).Kind == SyntaxKind.IdentifierToken
+                && Peek(1).Kind == SyntaxKind.EqualsToken)
+            {
+                var identifierToken = NextToken();
+                var operatorToken = NextToken();
+                var right = ParseAssignmentExpression();
+                return new AssginmentExpressionSyntax(identifierToken, operatorToken, right);
+            }
+            else
+            {
+                return ParseExpression();
+            }
         }
         private ExpressionSyntax ParseAssignmentExpression()
         {

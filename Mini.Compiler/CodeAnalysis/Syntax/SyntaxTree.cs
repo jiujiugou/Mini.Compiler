@@ -12,8 +12,8 @@ namespace Mini.Compiler.CodeAnalysis.Syntax
             EndOfFileToken = endOfFileToken;
             Text = text;
         }
-        public ImmutableArray<Diagnostics> Diagnostics { get; }
-        public ExpressionSyntax Root { get; } 
+        public IEnumerable<string> Diagnostics { get; }
+        public ExpressionSyntax Root { get; }
         public SyntaxToken EndOfFileToken { get; }
         public SourceText Text { get; }
 

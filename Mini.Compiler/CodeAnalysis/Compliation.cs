@@ -36,4 +36,30 @@ namespace Mini.Compiler.CodeAnalysis
             return new EvaluationResult(Array.Empty<Diagnostics>(), result);
         }
     }
+    public struct TextSpan
+    {
+        public TextSpan(int start, int length)
+        {
+            Start = start;
+            Length = length;
+        }
+        public int Start { get; }
+        public int Length { get; }
+
+        public int End => Start + Length;
+    }
+    public class Diagnostics
+    {
+        public Diagnostics(string message, TextSpan span)
+        {
+            Message = message;
+            Span = span;
+        }
+        public string Message { get; }
+        public TextSpan Span { get; }
+        public override string ToString()
+        {
+            return Message;
+        }
+    }
 }

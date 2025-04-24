@@ -13,4 +13,5 @@ public sealed class AssginmentExpressionSyntax : ExpressionSyntax
     public SyntaxToken Equals { get; }
     public ExpressionSyntax Expression { get; }
     public override SyntaxKind Kind => SyntaxKind.AssginmentExpression;
+
 }
