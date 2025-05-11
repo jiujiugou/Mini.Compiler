@@ -3,7 +3,7 @@ using static Mini.Compiler.CodeAnalysis.Compliation;
 
 namespace Mini.Compiler.CodeAnalysis.Syntax;
 
-public class DiagnosticBag:IEnumerable<Diagnostics>
+public class DiagnosticBag : IEnumerable<Diagnostics>
 {
     private readonly List<Diagnostics> _diagnostics = new();
     public void Report(TextSpan span, string message)
@@ -19,7 +19,7 @@ public class DiagnosticBag:IEnumerable<Diagnostics>
     internal void ReportInvalidNumber(TextSpan textSpan, string text, Type type)
     {
         var message = $"the number {text} isn't valid {type}";
-        Report(textSpan,message);
+        Report(textSpan, message);
     }
 
     internal void ReportBadCharacter(int position, char current)
@@ -61,6 +61,30 @@ public class DiagnosticBag:IEnumerable<Diagnostics>
     internal void ReportNotAssginment(TextSpan span, Type type1, Type type2)
     {
         var message = $"Cannot assign {type1} to {type2}.";
+        Report(span, message);
+    }
+
+    internal void ReportVariableAlreadyDeclared(TextSpan span, string name)
+    {
+        var message = $"Variable '{name}' already declared.";
+        Report(span, message);
+    }
+
+    internal void ReportUndefineName(TextSpan span, string name)
+    {
+        var message = $"Undefined name '{name}'.";
+        Report(span, message);
+    }
+
+    internal void ReportCannotConvert(TextSpan span, Type type1, Type type2)
+    {
+        var message = $"Cannot convert {type1} to {type2}.";
+        Report(span, message);
+    }
+
+    internal void ReportCannotAssign(TextSpan span, string name)
+    {
+        var message = $"Cannot assign to '{name}'.";
         Report(span, message);
     }
 }

@@ -1,4 +1,9 @@
-﻿namespace Mini.Compiler.CodeAnalysis.Syntax
+﻿using Mini.Compiler.CodeAnalysis.Text;
+using System.Collections.Immutable;
+using Mini.Compiler.CodeAnalysis.Syntax;
+using System.Timers;
+
+namespace Mini.Compiler.CodeAnalysis.Syntax
 {
     class Parser
     {
@@ -43,48 +48,144 @@
         private SyntaxToken Match(SyntaxKind kind)
         {
             if (Current.Kind == kind)
-            {
                 return NextToken();
-            }
-            _diagnostics.ReportUnexpectedToken(Current.Span,Current.Kind,kind);
-            return new SyntaxToken(kind, Current.Postion, kind.ToString(), null!);
+            _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
+            // 合成一个占位 token
+            NextToken();
+            var text = Current.Text;
+            var value = Current.Value;
+            return new SyntaxToken(kind, Current.Postion, text, value);
         }
-        public SyntaxTree Parse()
+
+        public CompilationUnitSyntax CompilationUnit()
+        {
+            var expression = ParseStatement();
+            while(Current.Kind == SyntaxKind.NewLineToken)
+            {
+                NextToken();
+            }
+            var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
+            return new CompilationUnitSyntax( endOfFileToken, expression);
+        }
+        public StatementSyntax ParseStatement()
+        {
+            while (Current.Kind == SyntaxKind.NewLineToken)
+            {
+                NextToken();
+            }
+            if (Current.Kind == SyntaxKind.OpenBraceToken)
+            {
+                return ParseBlockStatement();
+            }
+            if (Current.Kind == SyntaxKind.ForKeyword)
+            {
+                return ParseForStatement();
+            }
+            if (Current.Kind == SyntaxKind.LetKeyword || Current.Kind == SyntaxKind.VarKeyword)
+            {
+                return ParseVariableDeclaration();
+            }
+            if(Current.Kind==SyntaxKind.IfKeyWord)
+            {
+                return ParseIfStatement();
+            }
+            
+            if(Current.Kind == SyntaxKind.WhileKeyword)
+            {
+                return ParseWhileStatement();
+            }
+            return ParseExpressionStatment();
+        }
+
+        private StatementSyntax ParseWhileStatement()
+        {
+            var WhileToken = Match(SyntaxKind.WhileKeyword);
+            var condition = ParseExpression();
+            var body=ParseStatement();
+            return new WhileStatementSyntax(WhileToken, condition, body);
+        }
+
+        private StatementSyntax ParseForStatement()
+        {
+            var forToken = Match(SyntaxKind.ForKeyword);
+            var identifierToken = Match(SyntaxKind.IdentifierToken);
+            var equalsToken = Match(SyntaxKind.EqualsToken);
+            var lowerBound = ParseExpression();
+            var toToken = Match(SyntaxKind.ToKeyword);
+            var upperBound = ParseExpression();
+            var body = ParseStatement();
+            return new ForStatementSyntax(forToken, identifierToken, equalsToken, lowerBound,toToken, upperBound, body);
+        }
+
+        private StatementSyntax ParseIfStatement()
+        {
+            var token = Match(SyntaxKind.IfKeyWord);
+            var expression= ParseExpression();
+            var statement = ParseStatement();
+            var elseStatement = ParseElseCulse();
+            return new IfStatementSyntax(token, expression, statement, elseStatement);
+        }
+
+        private ElseClauseSyntax ParseElseCulse()
+        {
+            if(Current.Kind!= SyntaxKind.ElseKeyword)
+            {
+                return null;
+            }
+            var token = NextToken();
+            var statement = ParseStatement();
+            return new ElseClauseSyntax(token, statement);
+        }
+
+        private StatementSyntax ParseVariableDeclaration()
+        {
+            var expected = Current.Kind == SyntaxKind.LetKeyword ? SyntaxKind.LetKeyword : SyntaxKind.VarKeyword;
+            var keywordToken = Match(expected);
+            var identifierToken = Match(SyntaxKind.IdentifierToken);
+            var equalsToken = Match(SyntaxKind.EqualsToken);
+            var initializer = ParseExpression();
+            if(Current.Kind == SyntaxKind.NewLineToken || Current.Kind == SyntaxKind.SemicolonToken)
+            {
+                NextToken();
+            }
+            return new VariableDeclarationSyntax(keywordToken, identifierToken,equalsToken, initializer);
+        }
+
+        private StatementSyntax ParseExpressionStatment()
         {
             var expression = ParseExpression();
-            var endOfFileToken = Match(SyntaxKind.EndOfFileToken);
-            return new SyntaxTree(_text,_diagnostics.ToImmutableArray(), expression, endOfFileToken);
+            if(Current.Kind == SyntaxKind.NewLineToken||Current.Kind==SyntaxKind.SemicolonToken)
+            {
+                NextToken();
+            }
+            return new ExpressionStatementSyntax(expression);
         }
-        private ExpressionSyntax ParseAssignmentExpression()
+
+        private StatementSyntax ParseBlockStatement()
         {
-            if (Peek(0).Kind == SyntaxKind.IdentifierToken
-                && Peek(1).Kind == SyntaxKind.EqualsToken)
+            var statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+            var openBrace = Match(SyntaxKind.OpenBraceToken);
+
+            while (Current.Kind != SyntaxKind.CloseBraceToken
+                && Current.Kind != SyntaxKind.EndOfFileToken)
             {
-                var identifierToken = NextToken();
-                var operatorToken = NextToken();
-                var right = ParseAssignmentExpression();
-                return new AssginmentExpressionSyntax(identifierToken, operatorToken, right);
+                // 跳过空行和分号
+                if (Current.Kind == SyntaxKind.NewLineToken
+                 || Current.Kind == SyntaxKind.SemicolonToken)
+                {
+                    NextToken();
+                    continue;
+                }
+
+                // 解析一条语句；ParseStatement 内部要保证无论成功或失败都至少消费一个 token
+                statements.Add(ParseStatement());
             }
-            else
-            {
-                return ParseExpression();
-            }
+
+            var closeBrace = Match(SyntaxKind.CloseBraceToken);
+            return new BlockStatementSyntax(openBrace, statements.ToImmutable(), closeBrace);
         }
-        private ExpressionSyntax ParseAssignmentExpression()
-        {
-            if (Peek(0).Kind == SyntaxKind.IdentifierToken
-                && Peek(1).Kind == SyntaxKind.EqualsToken)
-            {
-                var identifierToken = NextToken();
-                var operatorToken = NextToken();
-                var right = ParseAssignmentExpression();
-                return new AssginmentExpressionSyntax(identifierToken, operatorToken, right);
-            }
-            else
-            {
-                return ParseExpression();
-            }
-        }
+
+
         public ExpressionSyntax ParseExpression(int parentPrecedence = 0)
         {
             ExpressionSyntax left;

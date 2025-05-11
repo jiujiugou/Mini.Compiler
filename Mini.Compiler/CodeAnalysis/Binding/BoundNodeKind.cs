@@ -7,6 +7,12 @@
         BinaryExpression,
         ErrorExpression,
         NameExpression,
-        AssignExpression
+        AssignExpression,
+        BlockStatement,
+        ExpressionStatement,
+        VariableDeclaration,
+        IfStatement,
+        ForStatement,
+        WhileStatement
     }
 }

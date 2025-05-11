@@ -61,7 +61,7 @@
         // null 关键字
         NullKeyword,
         // if 关键字
-        IfKeyword,
+        IfKeyWord,
         // else 关键字
         ElseKeyword,
         // while 关键字
@@ -72,6 +72,26 @@
         ReturnKeyword,
         NotEqualToken,
         NameExpression,
-        AssginmentExpression
+        AssginmentExpression,
+        CompilationUnit,
+        BlockStatement,
+        ExpressionStatement,
+        OpenBraceToken,
+        CloseBraceToken,
+        NewLineToken,
+        SemicolonToken,
+        VariableDeclaration,
+        VarKeyword,
+        LetKeyword,
+        PipePipeToken,
+        LessThanEqualsToken,
+        LessThanToken,
+        GreaterThanEqualsToken,
+        GreaterThanToken,
+        IfStatement,
+        ElseClause,
+        ForStatement,
+        WhileStatement,
+        ToKeyword
     }
 }

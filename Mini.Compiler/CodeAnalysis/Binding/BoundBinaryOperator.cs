@@ -36,6 +36,10 @@ namespace Mini.Compiler.CodeAnalysis.Binding
             new BoundBinaryOperator(SyntaxKind.PipeToken, BoundBinaryOperatorKind.LogicalOr,typeof(bool)),
             new BoundBinaryOperator(SyntaxKind.EqualsEqualsToken, BoundBinaryOperatorKind.Equals,typeof(int), typeof(bool)),
             new BoundBinaryOperator(SyntaxKind.BangEqualToken, BoundBinaryOperatorKind.NotEquals,typeof(int), typeof(bool)),
+            new BoundBinaryOperator(SyntaxKind.LessThanToken, BoundBinaryOperatorKind.Less,typeof(int), typeof(bool)),
+            new BoundBinaryOperator(SyntaxKind.LessThanEqualsToken, BoundBinaryOperatorKind.LessOrEqualTo,typeof(int), typeof(bool)),
+            new BoundBinaryOperator(SyntaxKind.GreaterThanToken, BoundBinaryOperatorKind.Greater,typeof(int), typeof(bool)),
+            new BoundBinaryOperator(SyntaxKind.GreaterThanEqualsToken, BoundBinaryOperatorKind.GreaterOrEqualTo,typeof(int), typeof(bool)),
             //new BoundBinaryOperator(SyntaxKind.AmpersandEqualToken, BoundBinaryOperatorKind.LogicalAnd, typeof(bool)),
         };
         public static BoundBinaryOperator? Bind(SyntaxKind syntaxKind, Type leftType, Type rightType)

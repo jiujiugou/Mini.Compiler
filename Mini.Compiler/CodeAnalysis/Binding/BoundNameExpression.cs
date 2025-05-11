@@ -1,17 +1,17 @@
-﻿namespace Mini.Compiler.CodeAnalysis.Binding
+﻿using Mini.Compiler.CodeAnalysis.Text;
+
+namespace Mini.Compiler.CodeAnalysis.Binding
 {
     internal class BoundNameExpression : BoundExpression
     {
-        public string Name { get; }
-        public override Type Type { get; }
-        public object? Value { get; }
-        public BoundNameExpression(string name, Type type, object? value)
+        public VariableSymbol Variable;
+        public BoundNameExpression(VariableSymbol variable)
         {
-            Name = name;
-            Type = type;
-            Value = value;
+            Variable = variable;
         }
 
         public override BoundNodeKind Kind => BoundNodeKind.NameExpression;
+
+        public override Type Type => Variable.Type;
     }
 }

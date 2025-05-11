@@ -1,14 +1,16 @@
-﻿namespace Mini.Compiler.CodeAnalysis.Binding
+﻿using Mini.Compiler.CodeAnalysis.Text;
+
+namespace Mini.Compiler.CodeAnalysis.Binding
 {
     internal class BoundAssignmentExpression : BoundExpression
     {
         public BoundExpression BoundExpression { get; }
-        public string Name { get; }
+        public VariableSymbol Variable { get; }
 
-        public BoundAssignmentExpression(string name,BoundExpression boundexpression)
+        public BoundAssignmentExpression(VariableSymbol variable,BoundExpression boundexpression)
         {
             BoundExpression = boundexpression;
-            Name = name;
+            Variable = variable;
         }
 
         public override Type Type => BoundExpression.Type;

@@ -13,6 +13,6 @@
         public BoundBinaryOperator Operator{ get; }
         public BoundExpression Left { get; }
         public BoundExpression Right { get; }
-        public override Type Type => Left.Type;
+        public override Type Type => Operator.ResultType;
     }
 }
